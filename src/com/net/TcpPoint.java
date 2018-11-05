@@ -70,6 +70,41 @@ public class TcpPoint {
 	}
 	
 	/**
+	 * 接收网络数据，返回包含对应数据的ByteBuffer。
+	 * @return 含有数据的{@link ByteBuffer}。
+	 */
+	public ByteBuffer Recv() {
+		byte[] lead = new byte[LEADING_BYTES];
+		try {
+			InputStream is = _Sock.getInputStream();
+			if (is.read(lead) < LEADING_BYTES)
+				return null;
+			ByteBuffer bb = ByteBuffer.wrap(lead);
+			bb.order(ByteOrder.BIG_ENDIAN);
+			long data_len = bb.getLong();
+			if (data_len == 0)
+				return null;
+			else if (data_len < 0)
+				return null;
+			bb = ByteBuffer.allocate((int)data_len);
+			byte[] content = new byte[(int) data_len];
+			long bytes_left = data_len;
+			while (bytes_left > 0) {
+				int bytes_read = is.read(content, 0, (int) bytes_left);
+				if (bytes_read < 0)
+					return null;
+				if (bytes_read > 0) {
+					bb.put(content);
+					bytes_left -= bytes_read;
+				}
+			}
+			return bb;
+		} catch (IOException e) {
+			return null;
+		}
+	}
+	
+	/**
 	 * 发送二进制字节。
 	 * @param Bytes 字节数据。
 	 * @return 发送的结果，参见{@link Result}。

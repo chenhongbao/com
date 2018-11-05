@@ -29,6 +29,23 @@ public class Common {
 		} catch (Exception e1) {
 		}
 	}
+	
+	/**
+	 * 打印消息到默认文件。
+	 * @param msg 打印的消息。
+	 */
+	public static void PrintException(String msg) {
+		File f = new File("exception.log");
+		try {
+			if (!f.exists()) {
+				f.createNewFile();
+			}
+			PrintStream ps = new PrintStream(f);
+			ps.write(msg.getBytes("UTF-8"));
+			ps.close();
+		} catch (Exception e1) {
+		}
+	}
 
 	/**
 	 * 从文本文件里加载JSON对象。
