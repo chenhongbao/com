@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.PrintStream;
+import java.util.Calendar;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -99,5 +100,23 @@ public class Common {
 			PrintException(new Exception("加载JSON文件错误，" + e.getMessage()));
 			return null;
 		}
+	}
+	
+	/**
+	 * 返回当前时间戳，格式为yyyy-mm-dd hh:mm:ss sss
+	 * @return 时间戳字符串
+	 */
+	public static String GetTimestamp() {
+		Calendar c = Calendar.getInstance();
+		int y = c.get(Calendar.YEAR);
+		int m = c.get(Calendar.MONTH) + 1;
+		int d = c.get(Calendar.DAY_OF_MONTH);
+		int h = c.get(Calendar.HOUR_OF_DAY);
+		int mm = c.get(Calendar.MINUTE);
+		int s = c.get(Calendar.SECOND);
+		int ss = c.get(Calendar.MILLISECOND);
+		String msg = y + "-" + (m < 10 ? "0" + m : m) + "-" + (d < 10 ? "0" + d : d) + " " + (h < 10 ? "0" + h : h)
+				+ ":" + (mm < 10 ? "0" + mm : mm) + (s < 10 ? "0" + s : s) + " " + ss;
+		return msg;
 	}
 }

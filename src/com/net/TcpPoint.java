@@ -188,6 +188,14 @@ public class TcpPoint {
 	}
 	
 	/**
+	 * 获得远程地址，包括IP和端口。
+	 * @return 远程IP地址，参见{@link SocketAddress}。
+	 */
+	public SocketAddress GetSocketAddress() {
+		return _Sock.getRemoteSocketAddress();
+	}
+	
+	/**
 	 * 对象销毁时会关闭网络连接。
 	 */
 	protected void finalize() throws Throwable {
