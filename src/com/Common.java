@@ -2,7 +2,9 @@ package com;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.Calendar;
 
@@ -26,14 +28,18 @@ public class Common {
 			if (!f.exists()) {
 				f.createNewFile();
 			}
-			e.printStackTrace(new PrintStream(f));
+			PrintStream ps = new PrintStream(f);
+			ps.append("[" + GetTimestamp() + "]" + e.getMessage() + "\n");
+			ps.close();
 		} catch (Exception e1) {
 		}
 	}
-	
+
 	/**
 	 * 打印消息到默认文件。
-	 * @param msg 打印的消息。
+	 * 
+	 * @param msg
+	 *            打印的消息。
 	 */
 	public static void PrintException(String msg) {
 		File f = new File("exception.log");
@@ -42,9 +48,35 @@ public class Common {
 				f.createNewFile();
 			}
 			PrintStream ps = new PrintStream(f);
-			ps.write(msg.getBytes("UTF-8"));
+			ps.append("[" + GetTimestamp() + "]" + msg + "\n");
 			ps.close();
 		} catch (Exception e1) {
+		}
+	}
+
+	/**
+	 * 接受输入流，从输入流读取JSON文本生成JSON对象。
+	 * 
+	 * @param is
+	 *            JSON文本输入流
+	 * @return JSON对象，参见 {@link JSONObject}
+	 */
+	public static JSONObject LoadJSONObject(InputStream is) {
+		String line = null;
+		try {
+			if (is == null || is.available() < 1) {
+				throw new Exception("输入流空引用");
+			}
+			StringBuilder sb = new StringBuilder();
+			BufferedReader br = new BufferedReader(new InputStreamReader(is));
+			while ((line = br.readLine()) != null) {
+				sb.append(line);
+			}
+			br.close();
+			return new JSONObject(sb.toString());
+		} catch (Exception e) {
+			PrintException(new Exception("加载JSON文件错误，" + e.getMessage()));
+			return null;
 		}
 	}
 
@@ -59,22 +91,41 @@ public class Common {
 		if (Path == null || Path.length() < 1) {
 			return null;
 		}
-		StringBuilder sb = new StringBuilder();
-		String line = null;
-		File f = new File(Path);
 		try {
-			BufferedReader br = new BufferedReader(new FileReader(f));
-			while ((line = br.readLine()) != null) {
-				sb.append(line);
-			}
-			br.close();
-			return new JSONObject(sb.toString());
+			FileInputStream f = new FileInputStream(new File(Path));
+			return LoadJSONObject(f);
 		} catch (Exception e) {
 			PrintException(new Exception("加载JSON文件错误，" + e.getMessage()));
 			return null;
 		}
 	}
 	
+	/**
+	 * 接受输入流，从输入流读取JSON文本生成JSON数组。
+	 * 
+	 * @param is
+	 *            JSON文本输入流
+	 * @return JSON对象，参见 {@link JSONObject}
+	 */
+	public static JSONArray LoadJSONArray(InputStream is) {
+		String line = null;
+		try {
+			if (is == null || is.available() < 1) {
+				throw new Exception("输入流空引用");
+			}
+			StringBuilder sb = new StringBuilder();
+			BufferedReader br = new BufferedReader(new InputStreamReader(is));
+			while ((line = br.readLine()) != null) {
+				sb.append(line);
+			}
+			br.close();
+			return new JSONArray(sb.toString());
+		} catch (Exception e) {
+			PrintException(new Exception("加载JSON文件错误，" + e.getMessage()));
+			return null;
+		}
+	}
+
 	/**
 	 * 从文本文件里加载JSON数组。
 	 * 
@@ -86,24 +137,18 @@ public class Common {
 		if (Path == null || Path.length() < 1) {
 			return null;
 		}
-		StringBuilder sb = new StringBuilder();
-		String line = null;
-		File f = new File(Path);
 		try {
-			BufferedReader br = new BufferedReader(new FileReader(f));
-			while ((line = br.readLine()) != null) {
-				sb.append(line);
-			}
-			br.close();
-			return new JSONArray(sb.toString());
+			FileInputStream f = new FileInputStream(new File(Path));
+			return LoadJSONArray(f);
 		} catch (Exception e) {
 			PrintException(new Exception("加载JSON文件错误，" + e.getMessage()));
 			return null;
 		}
 	}
-	
+
 	/**
 	 * 返回当前时间戳，格式为yyyy-mm-dd hh:mm:ss sss
+	 * 
 	 * @return 时间戳字符串
 	 */
 	public static String GetTimestamp() {
