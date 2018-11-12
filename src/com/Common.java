@@ -161,7 +161,7 @@ public class Common {
 		int s = c.get(Calendar.SECOND);
 		int ss = c.get(Calendar.MILLISECOND);
 		String msg = y + "-" + (m < 10 ? "0" + m : m) + "-" + (d < 10 ? "0" + d : d) + " " + (h < 10 ? "0" + h : h)
-				+ ":" + (mm < 10 ? "0" + mm : mm) + (s < 10 ? "0" + s : s) + " " + ss;
+				+ ":" + (mm < 10 ? "0" + mm : mm) + ":" + (s < 10 ? "0" + s : s) + " " + ss;
 		return msg;
 	}
 }
