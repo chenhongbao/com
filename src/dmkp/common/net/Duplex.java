@@ -15,6 +15,8 @@ public abstract class Duplex {
 	/*网络连接*/
 	private TcpPoint _tcp;
 	
+	private boolean _isConnected;
+	
 	/*接收发来数据线程*/
 	Thread _thd, _keepThd;
 	ExecutorService _Exce;
@@ -26,6 +28,7 @@ public abstract class Duplex {
 	 * 无参构造函数。
 	 */
 	public Duplex() {
+		_isConnected = false;
 		_firstConnected = true;
 	}
 	
@@ -47,7 +50,7 @@ public abstract class Duplex {
 	 * @return 连接仍然合法，返回true，否则返回false。
 	 */
 	public boolean IsConnected() {
-		return _tcp != null && _tcp.IsConnected();
+		return _isConnected && _tcp.IsConnected();
 	}
 	
 	/**
@@ -85,6 +88,7 @@ public abstract class Duplex {
 				_thd.interrupt();
 			if (_keepThd != null && _keepThd.isAlive())
 				_keepThd.interrupt();
+			_isConnected = false;
 			return new Result();
 		} catch (IOException e) {
 			return new Result(ResultState.Error, -1, e.getMessage());
@@ -158,6 +162,7 @@ public abstract class Duplex {
 				_StreamWorker();	
 			}});
 		_thd.start();
+		_isConnected = true;
 	}
 	
 	private void _StreamWorker() {
@@ -193,6 +198,7 @@ public abstract class Duplex {
 			}
 			else {
 				try {
+					_isConnected = false;
 					_tcp.Close();
 				} catch (IOException e) {}
 				try {
@@ -205,7 +211,7 @@ public abstract class Duplex {
 	}
 	
 	private void _KeepaliveWorker() {
-		while(_tcp.IsConnected()) {
+		while(this.IsConnected()) {
 			try {
 				_tcp.Send("", "UTF-8");
 				Thread.sleep(5 * 1000);
