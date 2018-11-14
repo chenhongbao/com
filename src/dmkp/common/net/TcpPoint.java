@@ -1,4 +1,4 @@
-package com.net;
+package dmkp.common.net;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -8,8 +8,8 @@ import java.nio.ByteOrder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 
-import com.Result;
-import com.Result.ResultState;
+import dmkp.common.util.Result;
+import dmkp.common.util.Result.ResultState;
 
 public class TcpPoint {
 	/*代表本TCP端点使用的socket连接，可能为null。*/

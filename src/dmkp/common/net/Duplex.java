@@ -1,4 +1,4 @@
-package com.net;
+package dmkp.common.net;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.Result;
-import com.Result.ResultState;
+import dmkp.common.util.Result;
+import dmkp.common.util.Result.ResultState;
 
 public abstract class Duplex {
 	
@@ -23,6 +23,13 @@ public abstract class Duplex {
 	boolean _firstConnected;
 	
 	/**
+	 * 无参构造函数。
+	 */
+	public Duplex() {
+		_firstConnected = true;
+	}
+	
+	/**
 	 * 把Socket连接封装起来。
 	 * @param Sock 合法的Socket连接。
 	 */
@@ -33,6 +40,14 @@ public abstract class Duplex {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	/**
+	 * 检查对象持有的连接是否合法。
+	 * @return 连接仍然合法，返回true，否则返回false。
+	 */
+	public boolean IsConnected() {
+		return _tcp != null && _tcp.IsConnected();
 	}
 	
 	/**

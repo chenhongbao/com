@@ -1,4 +1,4 @@
-package com;
+package dmkp.common.util;
 
 /**
  * 封装接口返回值。
