@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import dmkp.common.util.Result;
 import dmkp.common.util.Result.ResultState;
 
-public class TcpPoint {
+public class SocketWrapper {
 	/*代表本TCP端点使用的socket连接，可能为null。*/
 	private Socket _Sock;
 	
@@ -23,13 +23,13 @@ public class TcpPoint {
 	/**
 	 * 默认构造函数，不会实例化任何内部对象。
 	 */
-	public TcpPoint() {}
+	public SocketWrapper() {}
 	
 	/**
 	 * 把合法的Socket封装起来。
 	 * @param _Sock 合法的Socket对象。
 	 */
-	public TcpPoint(Socket _Sock) {
+	public SocketWrapper(Socket _Sock) {
 		this._Sock = _Sock;
 	}
 	

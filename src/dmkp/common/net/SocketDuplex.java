@@ -3,6 +3,7 @@ package dmkp.common.net;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -10,10 +11,10 @@ import java.util.concurrent.Executors;
 import dmkp.common.util.Result;
 import dmkp.common.util.Result.ResultState;
 
-public abstract class Duplex {
+public abstract class SocketDuplex {
 	
 	/*网络连接*/
-	private TcpPoint _tcp;
+	private SocketWrapper _tcp;
 	
 	private boolean _isConnected;
 	
@@ -27,7 +28,7 @@ public abstract class Duplex {
 	/**
 	 * 无参构造函数。
 	 */
-	public Duplex() {
+	public SocketDuplex() {
 		_isConnected = false;
 		_firstConnected = true;
 	}
@@ -36,7 +37,7 @@ public abstract class Duplex {
 	 * 把Socket连接封装起来。
 	 * @param Sock 合法的Socket连接。
 	 */
-	public Duplex(Socket Sock) {
+	public SocketDuplex(Socket Sock) {
 		_firstConnected = true;
 		try {
 			_InitConnection(Sock);
@@ -124,11 +125,19 @@ public abstract class Duplex {
 	}
 	
 	/**
-	 * 获取对象关联的网络地址信息。
+	 * 获取对象关联的IPv4地址信息。
 	 * @return 网络地址。参见 {@link InetAddress}。
 	 */
 	public InetAddress GetInetAddress() {
 		return _tcp.GetInetAddress();
+	}
+	
+	/**
+	 * 获取对象关联的网络地址信息。
+	 * @return 网络地址。参见 {@link SocketAddress}。
+	 */
+	public SocketAddress GetSocketAddress() {
+		return _tcp.GetSocketAddress();
 	}
 	
 	/**
@@ -154,7 +163,7 @@ public abstract class Duplex {
 	public abstract void OnHearbeatError(Result Reason);
 	
 	private void _InitConnection(Socket Sock) throws IOException{
-		_tcp = new TcpPoint(Sock);
+		_tcp = new SocketWrapper(Sock);
 		_Exce = Executors.newCachedThreadPool();
 		_thd = new Thread(new Runnable() {
 			@Override
