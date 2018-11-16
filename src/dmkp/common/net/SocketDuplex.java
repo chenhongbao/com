@@ -204,6 +204,8 @@ public abstract class SocketDuplex {
 						}	
 					});
 				}
+				
+				// keep-alive信息长度为0，不需要处理。
 			}
 			else {
 				try {
