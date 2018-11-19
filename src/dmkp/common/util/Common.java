@@ -7,6 +7,8 @@ import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Calendar;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -163,5 +165,25 @@ public class Common {
 		String msg = y + "-" + (m < 10 ? "0" + m : m) + "-" + (d < 10 ? "0" + d : d) + " " + (h < 10 ? "0" + h : h)
 				+ ":" + (mm < 10 ? "0" + mm : mm) + ":" + (s < 10 ? "0" + s : s) + " " + ss;
 		return msg;
+	}
+	
+	// 线程池单件
+	static ExecutorService _execSvc = null;
+	{
+		_execSvc = Executors.newCachedThreadPool();
+	}
+	
+	/**
+	 * 获得全局唯一线程池。
+	 * @return 线程池。
+	 */
+	public static ExecutorService GetSingletonExecSvc() {
+		if (_execSvc == null) {
+			Common.PrintException("Executor service is null.");
+			return Executors.newCachedThreadPool();
+		}
+		else {
+			return _execSvc;
+		}
 	}
 }

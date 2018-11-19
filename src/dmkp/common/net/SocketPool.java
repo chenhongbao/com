@@ -3,8 +3,8 @@ package dmkp.common.net;
 import java.net.SocketAddress;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 
+import dmkp.common.util.Common;
 import dmkp.common.util.Result;
 
 class SocketPool implements Runnable {
@@ -46,18 +46,13 @@ class SocketPool implements Runnable {
 	protected List<IpAddr> _Conns;
 	
 	/**
-	 * 线程池。
-	 */
-	protected ExecutorService _es;
-	
-	/**
 	 * 构造函数。
 	 * @param addrs 需要连接的网路地址。
 	 */
 	public SocketPool(List<IpAddr> addrs) {
 		_Conns = new LinkedList<IpAddr>();
 		_Conns.addAll(addrs);
-		_es.execute(this);
+		Common.GetSingletonExecSvc().execute(this);
 	}
 
 	@Override

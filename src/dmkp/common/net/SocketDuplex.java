@@ -5,9 +5,8 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.util.ArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
+import dmkp.common.util.Common;
 import dmkp.common.util.Result;
 import dmkp.common.util.Result.ResultState;
 
@@ -20,7 +19,6 @@ public abstract class SocketDuplex {
 	
 	/*接收发来数据线程*/
 	Thread _thd, _keepThd;
-	ExecutorService _Exce;
 	
 	/*记录是否首次连接*/
 	boolean _firstConnected;
@@ -164,7 +162,6 @@ public abstract class SocketDuplex {
 	
 	private void _InitConnection(Socket Sock) throws IOException{
 		_tcp = new SocketWrapper(Sock);
-		_Exce = Executors.newCachedThreadPool();
 		_thd = new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -193,7 +190,7 @@ public abstract class SocketDuplex {
 					for (int i=0; i<buffer.size(); ++i) {
 						bytes[i] = buffer.get(i);
 					}
-					_Exce.execute(new Runnable() {
+					Common.GetSingletonExecSvc().execute(new Runnable() {
 						@Override
 						public void run() {
 							try {
