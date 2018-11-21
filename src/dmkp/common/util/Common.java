@@ -169,7 +169,7 @@ public class Common {
 	
 	// 线程池单件
 	static ExecutorService _execSvc = null;
-	{
+	static {
 		_execSvc = Executors.newCachedThreadPool();
 	}
 	
