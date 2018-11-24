@@ -15,7 +15,7 @@ public abstract class SocketDuplex {
 	/*网络连接*/
 	private SocketWrapper _tcp;
 	
-	private boolean _isConnected;
+	private boolean _isRecving;
 	
 	/*接收发来数据线程*/
 	Thread _thd, _keepThd;
@@ -27,7 +27,7 @@ public abstract class SocketDuplex {
 	 * 无参构造函数。
 	 */
 	public SocketDuplex() {
-		_isConnected = false;
+		_isRecving = false;
 		_firstConnected = true;
 	}
 	
@@ -49,7 +49,7 @@ public abstract class SocketDuplex {
 	 * @return 连接仍然合法，返回true，否则返回false。
 	 */
 	public boolean IsConnected() {
-		return _isConnected && _tcp.IsConnected();
+		return _isRecving && _tcp.IsConnected();
 	}
 	
 	/**
@@ -87,7 +87,7 @@ public abstract class SocketDuplex {
 				_thd.interrupt();
 			if (_keepThd != null && _keepThd.isAlive())
 				_keepThd.interrupt();
-			_isConnected = false;
+			_isRecving = false;
 			return new Result();
 		} catch (IOException e) {
 			return new Result(ResultState.Error, -1, e.getMessage());
@@ -168,11 +168,13 @@ public abstract class SocketDuplex {
 				_StreamWorker();	
 			}});
 		_thd.start();
-		_isConnected = true;
 	}
 	
 	private void _StreamWorker() {
-		while(_tcp.IsConnected()) {
+		// 设置标志
+		_isRecving = true;
+		// 只要接收失败一次就退出
+		while(this.IsConnected()) {
 			Result res;
 			ArrayList<Byte> buffer = new ArrayList<Byte>();
 			if (_firstConnected) {
@@ -205,9 +207,10 @@ public abstract class SocketDuplex {
 				// keep-alive信息长度为0，不需要处理。
 			}
 			else {
-				System.err.println("SocketDuplex error: " + res.Message);
+				System.err.println(res.Message);
 				try {
-					_isConnected = false;
+					// while循环退出
+					_isRecving = false;
 					_tcp.Close();
 				} catch (IOException e) {}
 				try {
