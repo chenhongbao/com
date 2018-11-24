@@ -207,7 +207,6 @@ public abstract class SocketDuplex {
 				// keep-alive信息长度为0，不需要处理。
 			}
 			else {
-				System.err.println(res.Message);
 				try {
 					// while循环退出
 					_isRecving = false;
