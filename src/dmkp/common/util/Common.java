@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.Calendar;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -31,9 +32,11 @@ public class Common {
 				f.createNewFile();
 			}
 			FileWriter fw = new FileWriter(f, true);
-			fw.write("[" + GetTimestamp() + "]" + e.getMessage() + "\n");
+			fw.write("[" + GetTimestamp() + "]\n");
+			e.printStackTrace(new PrintWriter(fw));
 			fw.close();
 		} catch (Exception e1) {
+			e1.printStackTrace(System.err);
 		}
 	}
 
@@ -53,6 +56,7 @@ public class Common {
 			fw.write("[" + GetTimestamp() + "]" + msg + "\n");
 			fw.close();
 		} catch (Exception e1) {
+			e1.printStackTrace(System.err);
 		}
 	}
 
