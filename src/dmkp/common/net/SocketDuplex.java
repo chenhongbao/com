@@ -27,6 +27,7 @@ public abstract class SocketDuplex {
 	 * 无参构造函数。
 	 */
 	public SocketDuplex() {
+		_tcp = null;
 		_isRecving = false;
 		_firstConnected = true;
 	}
@@ -59,8 +60,9 @@ public abstract class SocketDuplex {
 	 * @return 返回连接的结果，参见 {@link Result}。
 	 */
 	public Result Connect(String IP, int Port) {
-		if (_tcp != null && _tcp.IsConnected())
+		if (_tcp != null && _tcp.IsConnected()) {
 			return new Result(Result.ResultState.Error, -1, "已连接");
+		}
 		try {
 			_InitConnection(new Socket(IP, Port));
 			_keepThd = new Thread(new Runnable() {
@@ -212,12 +214,14 @@ public abstract class SocketDuplex {
 					_isRecving = false;
 					_tcp.Close();
 				} catch (IOException e) {}
-				try {
-					OnDisconnect();
-				}catch (Exception e) {
-					System.err.println(e.getMessage());
-				}
 			}
+		}
+		
+		// 回调
+		try {
+			OnDisconnect();
+		}catch (Exception e) {
+			System.err.println(e.getMessage());
 		}
 	}
 	

@@ -39,31 +39,73 @@ public class SocketWrapper {
 	 * @return 接收的结果，参见{@link Result}。
 	 */
 	public Result Recv(ArrayList<Byte> Bytes) {
+		int bytes_left = 0, total_read = 0;
+		long data_len = 0;
 		byte[] lead = new byte[LEADING_BYTES];
 		try {
 			InputStream is = _Sock.getInputStream();
-			if (is.read(lead) < LEADING_BYTES)
-				return new Result(Result.ResultState.Success, -1, "引导位损坏");
-			ByteBuffer bb = ByteBuffer.wrap(lead);
-			bb.order(ByteOrder.BIG_ENDIAN);
-			long data_len = bb.getLong();
-			if (data_len == 0)
-				return new Result(Result.ResultState.Success, -1, "无接收数据");
-			else if (data_len < 0)
-				return new Result(Result.ResultState.Success, -1, "引导位错误");
-			byte[] content = new byte[(int) data_len];
-			long bytes_left = data_len;
-			while (bytes_left > 0) {
-				int bytes_read = is.read(content, 0, (int) bytes_left);
-				if (bytes_read < 0)
-					return new Result(ResultState.Error, -1, "接收数据错误");
-				if (bytes_read > 0) {
-					for (int i = 0; i < bytes_read; ++i)
-						Bytes.add(content[i]);
+			
+			// 读数据头部
+			bytes_left = LEADING_BYTES;
+			while (bytes_left > 0)
+			{
+				int bytes_read = is.read(lead, total_read, bytes_left);
+				// 数据全部读完
+				if (bytes_read == -1) {
+					break;
+				}
+				else
+				{
 					bytes_left -= bytes_read;
+					total_read += bytes_read;
 				}
 			}
-			return new Result();
+			
+			// 头部没有读完就结束
+			if (total_read < LEADING_BYTES) {
+				return new Result(Result.ResultState.Success, -1, "引导位损坏");
+			}
+			
+			// 解析头部
+			ByteBuffer bb = ByteBuffer.wrap(lead);
+			bb.order(ByteOrder.BIG_ENDIAN);
+			data_len = bb.getLong();
+			if (data_len == 0) {
+				return new Result(Result.ResultState.Success, 0, "无接收数据");
+			}
+			if (data_len < 0) {
+				return new Result(Result.ResultState.Error, -1, "引导位错误");
+			}
+				
+			// 申请内存
+			byte[] content = new byte[(int) data_len];
+			
+			// 重置变量
+			total_read = 0;
+			bytes_left = (int)data_len;
+			while (bytes_left > 0) {
+				int bytes_read = is.read(content, total_read, bytes_left);
+				if (bytes_read < 0) {
+					break;
+				}
+				if (bytes_read > 0) {
+					for (int i = 0; i < bytes_read; ++i) {
+						Bytes.add(content[i]);
+					}
+					
+					// 更新标记
+					bytes_left -= bytes_read;
+					total_read += bytes_read;
+				}
+			}
+			
+			// 检查结果
+			if (bytes_left > 0) {
+				return new Result(Result.ResultState.Error, -1, "数据没有读完");
+			}
+			else {
+				return new Result();
+			}			
 		} catch (IOException e) {
 			return new Result(ResultState.Error, -1, e.getMessage());
 		}
