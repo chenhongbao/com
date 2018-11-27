@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
-import java.util.ArrayList;
 
 import dmkp.common.util.Common;
 import dmkp.common.util.Result;
@@ -177,8 +176,6 @@ public abstract class SocketDuplex {
 		_isRecving = true;
 		// 只要接收失败一次就退出
 		while(this.IsConnected()) {
-			Result res;
-			ArrayList<Byte> buffer = new ArrayList<Byte>();
 			if (_firstConnected) {
 				_firstConnected = false;
 				try {
@@ -187,18 +184,14 @@ public abstract class SocketDuplex {
 					System.err.println(e.getMessage());
 				}
 			}
-			res = _tcp.Recv(buffer);
-			if (res.equals(Result.Success) ) {
-				if (buffer.size() > 0) {
-					byte[] bytes = new byte[buffer.size()];
-					for (int i=0; i<buffer.size(); ++i) {
-						bytes[i] = buffer.get(i);
-					}
+			byte[] res = _tcp.Recv();
+			if (res != null) {
+				if (res.length > 0) {
 					Common.GetSingletonExecSvc().execute(new Runnable() {
 						@Override
 						public void run() {
 							try {
-								OnStream(bytes);
+								OnStream(res);
 							}catch (Exception e) {
 								System.err.println(e.getMessage());
 							}

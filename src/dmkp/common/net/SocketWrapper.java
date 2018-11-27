@@ -6,7 +6,6 @@ import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 
 import dmkp.common.util.Result;
 import dmkp.common.util.Result.ResultState;
@@ -34,11 +33,11 @@ public class SocketWrapper {
 	}
 	
 	/**
-	 * 接收网络另一端发来的数据。
-	 * @param Bytes 字节数组链表，网络对面发来的数据。
-	 * @return 接收的结果，参见{@link Result}。
+	 * 接收数据。
+	 * @return 字节数组
+	 * @throws Exception 接收错误时抛出异常
 	 */
-	public Result Recv(ArrayList<Byte> Bytes) {
+	public byte[] Recv() {
 		int bytes_left = 0, total_read = 0;
 		long data_len = 0;
 		byte[] lead = new byte[LEADING_BYTES];
@@ -61,9 +60,17 @@ public class SocketWrapper {
 				}
 			}
 			
+			//
+			// 连接关闭
+			// 其中，WinSock在优雅地关闭连接后，Java地输入流会不停收到0个byte，而非-1。
+			//
+			if (total_read == 0) {
+				return null;
+			}
+			
 			// 头部没有读完就结束
-			if (total_read < LEADING_BYTES) {
-				return new Result(Result.ResultState.Error, -1, "引导位损坏");
+			if (0 < total_read && total_read < LEADING_BYTES) {
+				return null;
 			}
 			
 			// 解析头部
@@ -71,10 +78,10 @@ public class SocketWrapper {
 			bb.order(ByteOrder.BIG_ENDIAN);
 			data_len = bb.getLong();
 			if (data_len == 0) {
-				return new Result(Result.ResultState.Success, 0, "无接收数据");
+				return new byte[0];
 			}
 			if (data_len < 0) {
-				return new Result(Result.ResultState.Error, -1, "引导位错误");
+				return null;
 			}
 				
 			// 申请内存
@@ -88,11 +95,7 @@ public class SocketWrapper {
 				if (bytes_read < 0) {
 					break;
 				}
-				if (bytes_read > 0) {
-					for (int i = 0; i < bytes_read; ++i) {
-						Bytes.add(content[i]);
-					}
-					
+				if (bytes_read > 0) {				
 					// 更新标记
 					bytes_left -= bytes_read;
 					total_read += bytes_read;
@@ -101,46 +104,11 @@ public class SocketWrapper {
 			
 			// 检查结果
 			if (bytes_left > 0) {
-				return new Result(Result.ResultState.Error, -1, "数据没有读完");
+				return null;
 			}
 			else {
-				return new Result();
+				return content;
 			}			
-		} catch (IOException e) {
-			return new Result(ResultState.Error, -1, e.getMessage());
-		}
-	}
-	
-	/**
-	 * 接收网络数据，返回包含对应数据的ByteBuffer。
-	 * @return 含有数据的{@link ByteBuffer}。
-	 */
-	public ByteBuffer Recv() {
-		byte[] lead = new byte[LEADING_BYTES];
-		try {
-			InputStream is = _Sock.getInputStream();
-			if (is.read(lead) < LEADING_BYTES)
-				return null;
-			ByteBuffer bb = ByteBuffer.wrap(lead);
-			bb.order(ByteOrder.BIG_ENDIAN);
-			long data_len = bb.getLong();
-			if (data_len == 0)
-				return null;
-			else if (data_len < 0)
-				return null;
-			bb = ByteBuffer.allocate((int)data_len);
-			byte[] content = new byte[(int) data_len];
-			long bytes_left = data_len;
-			while (bytes_left > 0) {
-				int bytes_read = is.read(content, 0, (int) bytes_left);
-				if (bytes_read < 0)
-					return null;
-				if (bytes_read > 0) {
-					bb.put(content);
-					bytes_left -= bytes_read;
-				}
-			}
-			return bb;
 		} catch (IOException e) {
 			return null;
 		}
