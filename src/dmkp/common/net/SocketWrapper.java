@@ -63,7 +63,7 @@ public class SocketWrapper {
 			
 			// 头部没有读完就结束
 			if (total_read < LEADING_BYTES) {
-				return new Result(Result.ResultState.Success, -1, "引导位损坏");
+				return new Result(Result.ResultState.Error, -1, "引导位损坏");
 			}
 			
 			// 解析头部
