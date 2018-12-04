@@ -72,7 +72,7 @@ public class Common {
 		String line = null;
 		try {
 			if (is == null || is.available() < 1) {
-				throw new Exception("输入流空引用");
+				throw new Exception("输入流空引用或无数据");
 			}
 			StringBuilder sb = new StringBuilder();
 			BufferedReader br = new BufferedReader(new InputStreamReader(is));
@@ -118,7 +118,7 @@ public class Common {
 		String line = null;
 		try {
 			if (is == null || is.available() < 1) {
-				throw new Exception("输入流空引用");
+				throw new Exception("输入流空引用或无数据");
 			}
 			StringBuilder sb = new StringBuilder();
 			BufferedReader br = new BufferedReader(new InputStreamReader(is));
@@ -234,8 +234,9 @@ public class Common {
 		
 		// 读取配置
 		JSONArray arr = LoadJSONArray(is);
-		if (arr.length() < 1) {
-			return false;
+		if (arr == null || arr.length() < 1) {
+			// 找不到配置，默认所有IP都可以连接
+			return true;
 		}
 
 		// 比较IP
