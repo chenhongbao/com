@@ -3,6 +3,7 @@ package dmkp.common.util;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -105,7 +106,7 @@ public class Common {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * 接受输入流，从输入流读取JSON文本生成JSON数组。
 	 * 
@@ -170,24 +171,91 @@ public class Common {
 				+ ":" + (mm < 10 ? "0" + mm : mm) + ":" + (s < 10 ? "0" + s : s) + " " + ss;
 		return msg;
 	}
-	
+
 	// 线程池单件
 	static ExecutorService _execSvc = null;
 	static {
 		_execSvc = Executors.newCachedThreadPool();
 	}
-	
+
 	/**
 	 * 获得全局唯一线程池。
+	 * 
 	 * @return 线程池。
 	 */
 	public static ExecutorService GetSingletonExecSvc() {
 		if (_execSvc == null) {
 			Common.PrintException("Executor service is null.");
 			return Executors.newCachedThreadPool();
-		}
-		else {
+		} else {
 			return _execSvc;
 		}
+	}
+
+	/**
+	 * 加载IP配置，检查新连接IP是否允许连接
+	 * 
+	 * @param inIP
+	 *            新连接IP
+	 * @param conf
+	 *            配置文件路径
+	 * @return IP合法返回true，否则返回false
+	 */
+	public static boolean VerifyIP(String inIP, String conf) {
+		File f = new File(conf);
+		if (!f.exists()) {
+			return false;
+		}
+		try {
+			return VerifyIP(inIP, new FileInputStream(f));
+		} catch (FileNotFoundException e) {
+			Common.PrintException(e);
+			return false;
+		}
+	}
+
+	/**
+	 * 加载IP配置，检查新连接IP是否允许连接
+	 * 
+	 * @param inIP
+	 *            新连接IP
+	 * @param is
+	 *            配置文件输入流
+	 * @return IP合法返回true，否则返回false
+	 */
+	public static boolean VerifyIP(String inIP, InputStream is) {
+		boolean matched = true;
+
+		// 分隔IP地址
+		String[] segs = inIP.split("\\.");
+		if (segs.length != 4) {
+			return false;
+		}
+		
+		// 读取配置
+		JSONArray arr = LoadJSONArray(is);
+		if (arr.length() < 1) {
+			return false;
+		}
+
+		// 比较IP
+		for (int index = 0; index < arr.length(); ++index) {
+			String[] s = arr.getString(index).split("\\.");
+			if (s.length != 4) {
+				continue;
+			}
+			for (int i = 0; i < 4; ++i) {
+				if (s[i] != "*" && segs[i].compareTo(s[i]) != 0) {
+					matched = false;
+					break;
+				}
+			}
+			if (matched) {
+				return true;
+			} else {
+				matched = true;
+			}
+		}
+		return false;
 	}
 }
