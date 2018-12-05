@@ -12,23 +12,20 @@ import dmkp.common.util.Result.ResultState;
 public abstract class SocketDuplex {
 	
 	/*网络连接*/
-	private SocketWrapper _tcp;
+	private SocketWrapper _tcp = null;
 	
-	private boolean _isRecving;
+	private boolean _isRecving = false;
 	
 	/*接收发来数据线程*/
-	Thread _thd, _keepThd;
+	Thread _thd = null, _keepThd = null;
 	
 	/*记录是否首次连接*/
-	boolean _firstConnected;
+	boolean _firstConnected = true;
 	
 	/**
 	 * 无参构造函数。
 	 */
 	public SocketDuplex() {
-		_tcp = null;
-		_isRecving = false;
-		_firstConnected = true;
 	}
 	
 	/**
@@ -36,7 +33,6 @@ public abstract class SocketDuplex {
 	 * @param Sock 合法的Socket连接。
 	 */
 	public SocketDuplex(Socket Sock) {
-		_firstConnected = true;
 		try {
 			_InitConnection(Sock);
 		} catch (IOException e) {
@@ -59,8 +55,8 @@ public abstract class SocketDuplex {
 	 * @return 返回连接的结果，参见 {@link Result}。
 	 */
 	public Result Connect(String IP, int Port) {
-		if (_tcp != null && _tcp.IsConnected()) {
-			return new Result(Result.ResultState.Error, -1, "已连接");
+		if (this.IsConnected()) {
+			return new Result(Result.ResultState.Error, -1, "重复连接");
 		}
 		try {
 			_InitConnection(new Socket(IP, Port));
@@ -80,14 +76,20 @@ public abstract class SocketDuplex {
 	 * @return 断开连接的结果，参见{@link Result}。
 	 */
 	public Result Disconnect() {
-		if (_tcp == null || !_tcp.IsConnected())
+		if (!this.IsConnected()) {
 			return new Result(Result.ResultState.Error, -1, "未连接");
+		}
 		try {
-			_tcp.Close();
-			if (_thd != null && _thd.isAlive())
+			// 先退出线程
+			if (_thd != null && _thd.isAlive()) {
 				_thd.interrupt();
-			if (_keepThd != null && _keepThd.isAlive())
+			}
+			if (_keepThd != null && _keepThd.isAlive()) {
 				_keepThd.interrupt();
+			}
+			
+			// 关闭连接
+			_tcp.Close();
 			_isRecving = false;
 			return new Result();
 		} catch (IOException e) {
@@ -162,6 +164,9 @@ public abstract class SocketDuplex {
 	public abstract void OnHearbeatError(Result Reason);
 	
 	private void _InitConnection(Socket Sock) throws IOException{
+		if (Sock.isClosed() || Sock.isInputShutdown() || Sock.isOutputShutdown()) {
+			throw new IOException("网络连接不合法，或者已经关闭");
+		}
 		_tcp = new SocketWrapper(Sock);
 		_thd = new Thread(new Runnable() {
 			@Override
