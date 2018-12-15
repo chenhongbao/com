@@ -26,7 +26,7 @@ public class Common {
 	 * @param e
 	 *            “Ï≥£∂‘œÛ°£
 	 */
-	public static void PrintException(Exception e) {
+	public static void PrintException(Throwable e) {
 		File f = new File("exception.log");
 		try {
 			if (!f.exists()) {
