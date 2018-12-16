@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.PrintStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.ErrorManager;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
@@ -89,12 +90,17 @@ public class JSONSocketHandler extends Handler {
 	// 连接信息
 	private String _host;
 	private int _port;
+	
+	// Connection mutex
+	private ReentrantLock lock;
 
 	public JSONSocketHandler() {
+		lock = new ReentrantLock();
 	}
 
 	public JSONSocketHandler(String host, int port) {
 		_tcp = new SocketDuplexConn();
+		lock = new ReentrantLock();
 		
 		// 等到发日志才连接，延迟连接
 		_host = host;
@@ -117,13 +123,23 @@ public class JSONSocketHandler extends Handler {
 		}
 		String msg = getFormatter().format(record);
 		
-		// 连接日志服务器
+		// Check if Socket is connected
 		if (!_tcp.IsConnected()) {
-			Result r = _tcp.Connect(_host, _port);
-			if (r.equals(Result.Error)) {
-				Common.PrintException(new Exception("连接日志出错，" + r.Message + "，" + msg));
-				return;
+			// Exclusively lock
+			lock.lock();
+			
+			// Reconfirm the state
+			if (!_tcp.IsConnected())
+			{
+				Result r = _tcp.Connect(_host, _port);
+				if (r.equals(Result.Error)) {
+					Common.PrintException(new Exception("连接日志出错，" + r.Message + "，" + msg));
+					return;
+				}
 			}
+			
+			// Unlock
+			lock.unlock();
 		}
 		
 		// 发送日志
