@@ -4,14 +4,40 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.util.Calendar;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Common {
 
+    public static String runningJarName;
+
 	public Common() {
 	}
+
+    public static String GetRunningJarName() {
+        if (runningJarName != null && runningJarName.length() > 0) {
+            return runningJarName;
+        } else {
+            try {
+                runningJarName = new File(Common.class.getProtectionDomain().getCodeSource().getLocation()
+                        .toURI()).getName();
+
+                // strip the suffix
+                int i = runningJarName.indexOf(".jar");
+                if (i > 0) {
+                    runningJarName = runningJarName.substring(0, i);
+                } else if (i == 0) {
+                    runningJarName = "no_name";
+                }
+            } catch (URISyntaxException e) {
+                runningJarName = "name_not_found";
+            } finally {
+                return runningJarName;
+            }
+        }
+    }
 
 	/**
      * Thread pool singleton.
@@ -23,7 +49,7 @@ public class Common {
      * @param e exception instance
 	 */
 	public static void PrintException(Throwable e) {
-		File f = new File("exception.log");
+        File f = new File(GetRunningJarName() + ".log");
 		try {
 			if (!f.exists()) {
 				f.createNewFile();
@@ -42,7 +68,7 @@ public class Common {
      * @param msg exception message
 	 */
 	public static void PrintException(String msg) {
-		File f = new File("exception.log");
+        File f = new File(GetRunningJarName() + ".log");
 		try {
 			if (!f.exists()) {
 				f.createNewFile();
@@ -64,7 +90,7 @@ public class Common {
 		String line = null;
 		try {
 			if (is == null || is.available() < 1) {
-				throw new Exception("�����������û�������");
+                throw new Exception("Invalid InputStream");
 			}
 			StringBuilder sb = new StringBuilder();
 			BufferedReader br = new BufferedReader(new InputStreamReader(is));
@@ -74,7 +100,7 @@ public class Common {
 			br.close();
 			return new JSONObject(sb.toString());
 		} catch (Exception e) {
-			PrintException(new Exception("����JSON�ļ�����" + e.getMessage()));
+            PrintException(new Exception("Parse JSON error: " + e.getMessage()));
 			return null;
 		}
 	}
@@ -92,17 +118,13 @@ public class Common {
             FileInputStream f = new FileInputStream(new File(Path));
             return LoadJSONObject(f);
         } catch (Exception e) {
-            PrintException(new Exception("����JSON�ļ�����" + e.getMessage()));
+            PrintException(new Exception("Parse JSON error: " + e.getMessage()));
             return null;
         }
     }
 
     /**
-     * ���ı��ļ������JSON���顣
-	 * 
-	 * @param Path
-	 *            JSON�ı��ļ�·����
-	 * @return JSON���󣬲μ�{@link JSONObject}��
+     * Load JSON array from path. The file associated with the path contains only JSON text.
 	 */
     public static JSONArray LoadJSONArray(String Path) {
 		if (Path == null || Path.length() < 1) {
@@ -112,7 +134,7 @@ public class Common {
 			FileInputStream f = new FileInputStream(new File(Path));
             return LoadJSONArray(f);
 		} catch (Exception e) {
-			PrintException(new Exception("����JSON�ļ�����" + e.getMessage()));
+            PrintException(new Exception("Parse JSON error: " + e.getMessage()));
 			return null;
 		}
 	}
@@ -126,7 +148,7 @@ public class Common {
 		String line = null;
 		try {
 			if (is == null || is.available() < 1) {
-				throw new Exception("�����������û�������");
+                throw new Exception("Invalid InputStream");
 			}
 			StringBuilder sb = new StringBuilder();
 			BufferedReader br = new BufferedReader(new InputStreamReader(is));
@@ -136,7 +158,7 @@ public class Common {
 			br.close();
 			return new JSONArray(sb.toString());
 		} catch (Exception e) {
-			PrintException(new Exception("����JSON�ļ�����" + e.getMessage()));
+            PrintException(new Exception("Parse JSON error: " + e.getMessage()));
 			return null;
 		}
 	}
@@ -147,16 +169,10 @@ public class Common {
 	 */
 	public static String GetTimestamp() {
 		Calendar c = Calendar.getInstance();
-		int y = c.get(Calendar.YEAR);
-		int m = c.get(Calendar.MONTH) + 1;
-		int d = c.get(Calendar.DAY_OF_MONTH);
-		int h = c.get(Calendar.HOUR_OF_DAY);
-		int mm = c.get(Calendar.MINUTE);
-		int s = c.get(Calendar.SECOND);
-		int ss = c.get(Calendar.MILLISECOND);
-		String msg = y + "-" + (m < 10 ? "0" + m : m) + "-" + (d < 10 ? "0" + d : d) + " " + (h < 10 ? "0" + h : h)
-				+ ":" + (mm < 10 ? "0" + mm : mm) + ":" + (s < 10 ? "0" + s : s) + " " + ss;
-		return msg;
+        return String.format("%1$04d-%2$02d-%3$02d %4$02d:%5$02d:%6$02d %7$03d",
+                c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH),
+                c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), c.get(Calendar.SECOND),
+                c.get(Calendar.MILLISECOND));
 	}
 	static {
 		_execSvc = Executors.newCachedThreadPool();
