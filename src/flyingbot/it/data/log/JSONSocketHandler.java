@@ -4,8 +4,6 @@ import flyingbot.it.net.tcp.SocketDuplex;
 import flyingbot.it.util.Common;
 import flyingbot.it.util.Result;
 
-import java.io.File;
-import java.io.PrintStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.util.concurrent.locks.ReentrantLock;
@@ -16,13 +14,17 @@ import java.util.logging.LogRecord;
 
 public class JSONSocketHandler extends Handler {
 
+    private SocketDuplex tcp;
+    private String host;
+    private int port;
+
 	public JSONSocketHandler(String host, int port) {
-		_tcp = new SocketDuplexConn();
+        tcp = new SocketDuplexConn();
 		lock = new ReentrantLock();
 
         // save info
-		_host = host;
-		_port = port;
+        this.host = host;
+        this.port = port;
 
         // set formatter
 		setFormatter(new JSONFormatter());
@@ -34,25 +36,6 @@ public class JSONSocketHandler extends Handler {
 		setErrorManager(new JSONErrorManager());
 	}
 
-    class JSONErrorManager extends ErrorManager {
-
-        public JSONErrorManager() {
-        }
-
-        @Override
-        public synchronized void error(String msg, Exception ex, int code) {
-            File f = new File("exception.log");
-            try {
-                if (!f.exists()) {
-                    f.createNewFile();
-                }
-                ex.printStackTrace(new PrintStream(f));
-            } catch (Exception e1) {
-            }
-        }
-
-    }
-	
 	@Override
 	public void publish(LogRecord record) {
 		if (record == null) {
@@ -61,16 +44,19 @@ public class JSONSocketHandler extends Handler {
 		String msg = getFormatter().format(record);
 
 		// Check if Socket is connected
-		if (!_tcp.IsConnected()) {
+        if (!tcp.IsConnected()) {
 			// Exclusively lock
 			lock.lock();
 
 			// Reconfirm the state
-			if (!_tcp.IsConnected())
+            if (!tcp.IsConnected())
 			{
-				Result r = _tcp.Connect(_host, _port);
+                Result r = tcp.Connect(host, port);
 				if (r.equals(Result.Error)) {
                     Common.PrintException(new Exception("Connect error, " + r.Message + ", " + msg));
+
+                    // unlock
+                    lock.unlock();
 					return;
 				}
 			}
@@ -80,16 +66,19 @@ public class JSONSocketHandler extends Handler {
 		}
 
         // Send log
-		Result r = _tcp.SendStream(msg.getBytes(Charset.forName(getEncoding())));
+        Result r = tcp.SendStream(msg.getBytes(Charset.forName(getEncoding())));
 		if (r.equals(Result.Error)) {
             Common.PrintException(new Exception("Send log error, " + r.Message));
 		}
 	}
 
-    private SocketDuplex _tcp;
-
-    private String _host;
-    private int _port;
+    @Override
+    public void close() throws SecurityException {
+        Result r = tcp.Disconnect();
+        if (r.equals(Result.Error)) {
+            Common.PrintException(new Exception("Close logger failed, " + r.Message));
+        }
+    }
 
     // Connection mutex
     private ReentrantLock lock;
@@ -98,12 +87,17 @@ public class JSONSocketHandler extends Handler {
         lock = new ReentrantLock();
 	}
 
-	@Override
-	public void close() throws SecurityException {
-		Result r = _tcp.Disconnect();
-		if (r.equals(Result.Error)) {
-            Common.PrintException(new Exception("Close logger failed, " + r.Message));
+    class JSONErrorManager extends ErrorManager {
+
+        public JSONErrorManager() {
         }
+
+        @Override
+        public synchronized void error(String msg, Exception ex, int code) {
+            Common.PrintException(msg + "[CODE:" + code + "]");
+            Common.PrintException(ex);
+        }
+
     }
 
     class JSONFormatter extends Formatter {

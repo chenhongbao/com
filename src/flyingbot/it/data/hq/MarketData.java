@@ -125,114 +125,56 @@ public class MarketData implements TransferredData<MarketData>{
 	
 	@Override
 	public int compareTo(MarketData Md) {
-		if (this.ActionDay.compareTo(Md.ActionDay) < 0)
-			return -1;
-		else 
-			if (this.ActionDay.compareTo(Md.ActionDay) == 0 && this.UpdateTime.compareTo(Md.UpdateTime) < 0)
-				return -1;
-			else
-				if (this.ActionDay.compareTo(Md.ActionDay) == 0 && this.UpdateTime.compareTo(Md.UpdateTime) == 0 
-				&& this.UpdateMillisec < Md.UpdateMillisec)
-					return -1;
-				else
-					if (this.ActionDay.compareTo(Md.ActionDay) == 0 && this.UpdateTime.compareTo(Md.UpdateTime) == 0 
-					&& this.UpdateMillisec == Md.UpdateMillisec)
-						return 0;
-		return 1;
+        String self = this.ActionDay.concat(this.UpdateTime + this.UpdateMillisec);
+        String that = Md.ActionDay.concat(Md.UpdateTime + Md.UpdateMillisec);
+        return self.compareTo(that);
 	}
 
-	/// ������
 	public String TradingDay;
-	/// ��Լ����
 	public String InstrumentID;
-	/// ����������
 	public String ExchangeID;
-	/// ��Լ�ڽ������Ĵ���
 	public String ExchangeInstID;
-	/// ���¼�
 	public double LastPrice;
-	/// �ϴν����
 	public double PreSettlementPrice;
-	/// ������
 	public double PreClosePrice;
-	/// ��ֲ���
 	public double PreOpenInterest;
-	/// ����
 	public double OpenPrice;
-	/// ��߼�
 	public double HighestPrice;
-	/// ��ͼ�
 	public double LowestPrice;
-	/// ����
 	public int Volume;
-	/// �ɽ����
 	public double Turnover;
-	/// �ֲ���
 	public double OpenInterest;
-	/// ������
 	public double ClosePrice;
-	/// ���ν����
 	public double SettlementPrice;
-	/// ��ͣ���
 	public double UpperLimitPrice;
-	/// ��ͣ���
 	public double LowerLimitPrice;
-	/// ����ʵ��
 	public double PreDelta;
-	/// ����ʵ��
 	public double CurrDelta;
-	/// ����޸�ʱ��
 	public String UpdateTime;
-	/// ����޸ĺ���
 	public int UpdateMillisec;
-	/// �����һ
 	public double BidPrice1;
-	/// ������һ
 	public int BidVolume1;
-	/// ������һ
 	public double AskPrice1;
-	/// ������һ
 	public int AskVolume1;
-	/// ����۶�
 	public double BidPrice2;
-	/// ��������
 	public int BidVolume2;
-	/// �����۶�
 	public double AskPrice2;
-	/// ��������
 	public int AskVolume2;
-	/// �������
 	public double BidPrice3;
-	/// ��������
 	public int BidVolume3;
-	/// ��������
 	public double AskPrice3;
-	/// ��������
 	public int AskVolume3;
-	/// �������
 	public double BidPrice4;
-	/// ��������
 	public int BidVolume4;
-	/// ��������
 	public double AskPrice4;
-	/// ��������
 	public int AskVolume4;
-	/// �������
 	public double BidPrice5;
-	/// ��������
 	public int BidVolume5;
-	/// ��������
 	public double AskPrice5;
-	/// ��������
 	public int AskVolume5;
-	/// ���վ���
 	public double AveragePrice;
-	/// ҵ������
 	public String ActionDay;
-	/// �����������ڣ�Ĭ��0�����ɱ䣩
 	public final int Period = 0;
-	/// �����ݵ����кţ�����Ψһ��ʶ�����ݣ�����
 	public String SerialNo;
-	/// Ԫ���ݣ���ʾ����������
 	public String _METADATA_;
 }

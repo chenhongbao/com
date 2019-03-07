@@ -56,41 +56,22 @@ public class Candle implements TransferredData<Candle>{
 	
 	@Override
 	public int compareTo(Candle Cnd) {
-		if (this.ActionDay.compareTo(Cnd.ActionDay) < 0)
-			return -1;
-		else 
-			if (this.ActionDay.compareTo(Cnd.ActionDay) == 0  && this.UpdateTime.compareTo(Cnd.UpdateTime) < 0)
-				return -1;
-			else
-				if (this.ActionDay.compareTo(Cnd.ActionDay) == 0 && this.UpdateTime.compareTo(Cnd.UpdateTime) == 0)
-					return 0;			
-		return 1;
+        String self = this.ActionDay.concat(this.UpdateTime);
+        String that = Cnd.ActionDay.concat(Cnd.UpdateTime);
+        return self.compareTo(that);
 	}
 
-	/// K����߼�
 	public double  High;
-	/// K����ͼ�
 	public double  Low;
-	/// K�����̼�
 	public double  Close;
-	/// K�߿��̼�
 	public double  Open;
-	/// ҵ������
 	public String  ActionDay;
-	/// ��������
 	public String  TradingDay;
-	/// ����ʱ��
 	public String  UpdateTime;
-	/// K�߳ɽ���
 	public int Volume;
-	/// K�����ֲ���
 	public int OpenInterest;
-	/// ��Լ����
 	public String InstrumentID;
-	/// �����ݵ����кţ�����Ψһ��ʶ�����ݣ�����
 	public String SerialNo;
-	/// ���������ڣ��֣�
 	public int Period;
-	/// Ԫ���ݣ���ʾ�����ݵ�����
 	public String _METADATA_;
 }

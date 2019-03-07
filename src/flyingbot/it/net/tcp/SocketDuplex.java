@@ -28,7 +28,7 @@ public abstract class SocketDuplex {
 	 */
 	public SocketDuplex(Socket Sock) {
 		try {
-			_InitConnection(Sock);
+            initConnection(Sock);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -49,11 +49,11 @@ public abstract class SocketDuplex {
             return new Result(Result.ResultState.Error, -1, "Duplicated connection");
 		}
 		try {
-			_InitConnection(new Socket(IP, Port));
+            initConnection(new Socket(IP, Port));
             keepThread = new Thread(new Runnable() {
 				@Override
 				public void run() {
-					_KeepaliveWorker();	
+                    keepaliveWorker();
 				}});
 			return new Result();
 		} catch (IOException e) {
@@ -152,8 +152,8 @@ public abstract class SocketDuplex {
      * @param Reason close reason
 	 */
 	public abstract void OnHearbeatError(Result Reason);
-	
-	private void _InitConnection(Socket Sock) throws IOException{
+
+    private void initConnection(Socket Sock) throws IOException {
 		if (Sock.isClosed() || Sock.isInputShutdown() || Sock.isOutputShutdown()) {
             throw new IOException("Socket error.");
         }
@@ -161,12 +161,12 @@ public abstract class SocketDuplex {
         thread = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				_StreamWorker();	
+                streamWorker();
 			}});
         thread.start();
 	}
-	
-	private void _StreamWorker() {
+
+    private void streamWorker() {
         // mark
         isRecving = true;
 
@@ -215,8 +215,8 @@ public abstract class SocketDuplex {
             e.printStackTrace();
 		}
 	}
-	
-	private void _KeepaliveWorker() {
+
+    private void keepaliveWorker() {
 		while(this.IsConnected()) {
 			try {
                 tcp.Send("", "UTF-8");
