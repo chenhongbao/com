@@ -3,7 +3,7 @@ package flyingbot.it.data.log;
 import flyingbot.it.util.Common;
 import org.json.JSONObject;
 
-public class SingleLog {
+public class SingleLog implements Comparable<SingleLog> {
 	
 	public SingleLog() {	
 	}
@@ -46,4 +46,9 @@ public class SingleLog {
 	public String SourceClassName = "";
 	public String SourceMethodName = "";
 	public int LineNumber = -1;
+
+    @Override
+    public int compareTo(SingleLog o) {
+        return (int) (this.Millis - o.Millis);
+    }
 }

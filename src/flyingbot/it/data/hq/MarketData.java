@@ -125,9 +125,7 @@ public class MarketData implements TransferredData<MarketData>{
 	
 	@Override
 	public int compareTo(MarketData Md) {
-        String self = this.ActionDay.concat(this.UpdateTime + this.UpdateMillisec);
-        String that = Md.ActionDay.concat(Md.UpdateTime + Md.UpdateMillisec);
-        return self.compareTo(that);
+		return this.SerialNo.compareTo(Md.SerialNo);
 	}
 
 	public String TradingDay;

@@ -56,9 +56,7 @@ public class Candle implements TransferredData<Candle>{
 	
 	@Override
 	public int compareTo(Candle Cnd) {
-        String self = this.ActionDay.concat(this.UpdateTime);
-        String that = Cnd.ActionDay.concat(Cnd.UpdateTime);
-        return self.compareTo(that);
+        return this.SerialNo.compareTo(Cnd.SerialNo);
 	}
 
 	public double  High;
